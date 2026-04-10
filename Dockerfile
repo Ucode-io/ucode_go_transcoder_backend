@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.22 as builder
+FROM golang:1.24 as builder
 
 # Set up the workspace
 RUN mkdir -p $GOPATH/src/gitlab.udevs.io/ucode/ucode_go_transcoder_service
