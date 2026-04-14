@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"gitlab.com/transcodeuz/transcode-rest/config"
@@ -37,10 +38,13 @@ func (s *pipelineServide) Create(ctx context.Context, req *pb.CreatePipelineRequ
 		return &emptypb.Empty{}, err
 	}
 
+	fmt.Println("Project->", req.ProjectId)
 	project, err := s.strg.Postgres().ProjectGet(ctx, &models.ProjectGetReq{ID: req.ProjectId})
 	if err != nil {
+		fmt.Println("Project err->", err)
 		return &emptypb.Empty{}, err
 	}
+	fmt.Println("Project->", project)
 
 	pipelineRes, err := s.strg.Postgres().PipelineCreate(ctx, &models.PipelineCreateReq{
 		ID:                uuid.NewString(),
@@ -57,6 +61,7 @@ func (s *pipelineServide) Create(ctx context.Context, req *pb.CreatePipelineRequ
 		TableSlug:         req.TableSlug,
 	})
 	if err != nil {
+		fmt.Println("Pipeline error->", err)
 		return &emptypb.Empty{}, err
 	}
 
@@ -64,6 +69,7 @@ func (s *pipelineServide) Create(ctx context.Context, req *pb.CreatePipelineRequ
 	if err != nil {
 		return &emptypb.Empty{}, err
 	}
+	fmt.Println("Storage->", storage)
 
 	err = s.rabbit.PublishPipeline(&models.PipelineRabbitMq{
 		Id:           pipelineRes.ID,
@@ -81,8 +87,10 @@ func (s *pipelineServide) Create(ctx context.Context, req *pb.CreatePipelineRequ
 		KeyID:        req.KeyId,
 	})
 	if err != nil {
+		fmt.Println("Rabbit Err->", err)
 		return &emptypb.Empty{}, err
 	}
+	fmt.Println("I am here")
 
 	return nil, nil
 }
